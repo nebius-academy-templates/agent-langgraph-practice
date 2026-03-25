@@ -1,0 +1,29 @@
+[project]
+name = "qa-langgraph-agent"
+version = "0.1.0"
+description = "LangGraph QA agent with MCP tool loading."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "langgraph>=0.2",
+  "langchain-anthropic",
+  "langchain-core",
+  "langchain-mcp-adapters>=0.1",
+  "langsmith",
+  "python-dotenv",
+  "pydantic",
+  "langgraph-checkpoint-sqlite>=3.0.3",
+]
+
+[build-system]
+requires = ["hatchling>=1.24.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["qa_agent"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+addopts = "-q"
