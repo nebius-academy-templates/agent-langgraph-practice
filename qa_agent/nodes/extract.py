@@ -11,38 +11,26 @@ from ..tools.linear import _fetch_issue
 def extract_node(state: QAAgentState) -> Dict:
     """
     Fetch the Linear ticket and detect any existing test cases.
+
+    TODO:
+    - Read state["ticket_id"].
+    - Call _fetch_issue(ticket_id) to get the ticket data dict.
+    - Scan the comments list for any comment whose body contains "TC-001" or
+      "### TC-" — these are previously generated test cases.
+    - Return {"ticket_data": <dict>, "existing_test_cases": <str | None>}
+      where existing_test_cases is the body of the first matching comment, or None.
     """
-    ticket_id = state["ticket_id"]
-
-    ticket_data = _fetch_issue(ticket_id)
-    comments = ticket_data.get("comments", [])
-
-    existing_test_cases: str | None = None
-    for c in comments:
-        body = (c.get("body") or "") if isinstance(c, dict) else ""
-        if "TC-001" in body or "### TC-" in body:
-            existing_test_cases = body
-            break
-
-    return {
-        "ticket_data": ticket_data,
-        "existing_test_cases": existing_test_cases,
-    }
+    raise NotImplementedError("TODO: implement extract_node")
 
 
 def check_existing_node(state: QAAgentState) -> Dict:
     """
     If existing test cases were found, ask the user what to do next.
-    """
-    existing = state.get("existing_test_cases")
-    if not existing:
-        return {}
 
-    prompt = (
-        "I found existing test cases on this Linear ticket.\n\n"
-        "What would you like to do?\n"
-        '- reply **"replace"** to overwrite them\n'
-        '- reply **"supplement"** to add additional cases\n'
-        '- reply **"skip"** to leave them unchanged\n'
-    )
-    return {"messages": [HumanMessage(content=prompt)]}
+    TODO:
+    - Read state.get("existing_test_cases").
+    - If None or empty, return {} (nothing to do).
+    - Otherwise return {"messages": [HumanMessage(content=<prompt>)]} where the
+      prompt asks the user to reply "replace", "supplement", or "skip".
+    """
+    raise NotImplementedError("TODO: implement check_existing_node")

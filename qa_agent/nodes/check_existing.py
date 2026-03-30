@@ -1,15 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, Optional
+# check_existing_node is implemented in extract.py alongside extract_node.
+# This file is kept for import compatibility.
+from .extract import check_existing_node
 
-from ..state import QAState
-
-
-def check_existing(state: QAState, *, tools: Optional[object] = None) -> Dict:
-    """
-    Check if an answer/work item already exists.
-
-    `tools` is injected (e.g. MCPToolset). We do not import tool implementations here.
-    """
-    _ = tools  # reserved for future use
-    return {"existing": None}
+__all__ = ["check_existing_node"]

@@ -10,9 +10,8 @@ LINEAR_API_URL = "https://api.linear.app/graphql"
 
 
 def _get_api_key() -> str:
-    key = os.environ.get("LINEAR_API_KEY")  # usually set by config.load_dotenv()
+    key = os.environ.get("LINEAR_API_KEY")
     if not key:
-        # Allow using these tools standalone (without first calling Settings.load()).
         try:
             from dotenv import load_dotenv  # type: ignore
 
@@ -30,7 +29,7 @@ def _graphql(query: str, variables: Dict[str, Any]) -> Dict[str, Any]:
     Execute a GraphQL request against Linear and return the `data` object.
     """
     headers = {
-        "Authorization": _get_api_key(),  # raw key, no Bearer prefix
+        "Authorization": _get_api_key(),
         "Content-Type": "application/json",
     }
     payload = {"query": query, "variables": variables}
@@ -52,6 +51,13 @@ def _graphql(query: str, variables: Dict[str, Any]) -> Dict[str, Any]:
 def _fetch_issue(ticket_id: str) -> Dict[str, Any]:
     """
     Fetch and normalise a Linear issue by identifier or ID.
+
+    Uses the following GraphQL query shape — you can extend the selected fields
+    if you need more data (e.g. acceptanceCriteria, assignee, team).
+
+    Returns a normalised dict with keys:
+        id, identifier, title, description, priority, priorityLabel,
+        state (str), labels (list[str]), comments (list[dict]).
     """
     query = """
     query IssueByIdOrKey($id: String!) {
@@ -85,95 +91,55 @@ def _fetch_issue(ticket_id: str) -> Dict[str, Any]:
     }
     """
 
-    data = _graphql(query, {"id": ticket_id})
-    issue = data.get("issue")
-    if not issue:
-        return {}
-
-    labels_nodes = (issue.get("labels") or {}).get("nodes") or []
-    comments_nodes = (issue.get("comments") or {}).get("nodes") or []
-
-    labels: List[str] = [n.get("name", "") for n in labels_nodes if n.get("name")]
-    comments: List[Dict[str, Any]] = []
-    for c in comments_nodes:
-        comments.append(
-            {
-                "id": c.get("id"),
-                "body": c.get("body") or "",
-                "createdAt": c.get("createdAt"),
-                "author": (c.get("user") or {}).get("name"),
-            }
-        )
-
-    state = issue.get("state") or {}
-    state_str = state.get("name") or state.get("type")
-
-    return {
-        "id": issue.get("id"),
-        "identifier": issue.get("identifier"),
-        "title": issue.get("title") or "",
-        "description": issue.get("description") or "",
-        "priority": issue.get("priority"),
-        "priorityLabel": issue.get("priorityLabel"),
-        "state": state_str,
-        "labels": labels,
-        "comments": comments,
-    }
+    # TODO: call _graphql, extract issue data, and return a normalised dict.
+    # Hint: labels are nested under issue["labels"]["nodes"], comments under
+    # issue["comments"]["nodes"]. Normalise both to flat lists before returning.
+    raise NotImplementedError("TODO: implement _fetch_issue")
 
 
 @tool
 def get_linear_ticket(ticket_id: str) -> Dict[str, Any]:
     """
     Fetch a Linear ticket by identifier or internal ID and return a normalised issue dict.
-    """
 
-    return _fetch_issue(ticket_id)
+    TODO: call _fetch_issue(ticket_id) and return the result.
+    """
+    raise NotImplementedError("TODO: implement get_linear_ticket")
 
 
 @tool
 def list_linear_comments(ticket_id: str) -> List[Dict[str, Any]]:
     """
     List comments on a Linear ticket. Returns an empty list if the issue is not found.
-    """
 
-    issue = _fetch_issue(ticket_id)
-    return issue.get("comments", []) if issue else []
+    TODO: call _fetch_issue(ticket_id) and return issue.get("comments", []).
+    """
+    raise NotImplementedError("TODO: implement list_linear_comments")
 
 
 @tool
 def post_linear_comment(ticket_id: str, body: str) -> str:
     """
-    Post a new comment to a Linear ticket. Accepts either identifier (e.g. 'ENG-123')
-    or internal UUID and returns a confirmation string on success.
-    """
+    Post a new comment to a Linear ticket.
 
-    issue = _fetch_issue(ticket_id)
-    if not issue:
-        raise RuntimeError(f"Linear issue not found for '{ticket_id}'.")
+    Accepts either an identifier (e.g. 'ENG-123') or an internal UUID.
+    Returns a confirmation string on success.
 
-    issue_id = issue.get("id")
-    if not issue_id:
-        raise RuntimeError("Resolved Linear issue is missing an 'id' field.")
+    TODO:
+    - Call _fetch_issue(ticket_id) to resolve the internal issue UUID.
+    - Run a CommentCreate GraphQL mutation using _graphql().
+    - Return a confirmation string like "Comment <id> created on issue <identifier>.".
 
-    mutation = """
-    mutation CommentCreate($input: CommentCreateInput!) {
-      commentCreate(input: $input) {
-        success
-        comment {
-          id
+    GraphQL mutation shape:
+        mutation CommentCreate($input: CommentCreateInput!) {
+          commentCreate(input: $input) {
+            success
+            comment { id }
+          }
         }
-      }
-    }
+    Variables: {"input": {"issueId": <uuid>, "body": <body>}}
     """
-    variables = {"input": {"issueId": issue_id, "body": body}}
-
-    data = _graphql(mutation, variables)
-    result = (data.get("commentCreate") or {})
-    if not result.get("success"):
-        raise RuntimeError(f"Failed to create Linear comment: {result}")
-
-    comment = result.get("comment") or {}
-    return f"Comment {comment.get('id')} created on issue {issue.get('identifier')}."
+    raise NotImplementedError("TODO: implement post_linear_comment")
 
 
 __all__ = [

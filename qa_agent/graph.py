@@ -19,8 +19,8 @@ from .state import QAState
 
 def _route_after_review(state: QAState) -> str:
     """Router deciding what to do after human review."""
-    approved = bool(state.get("approved"))
-    return "approved" if approved else "needs_changes"
+    # TODO: return "approved" if state["approved"] is True, else "needs_changes"
+    raise NotImplementedError("TODO: implement _route_after_review")
 
 
 def build_graph(
@@ -30,48 +30,31 @@ def build_graph(
     checkpointer: Optional[object] = None,
 ):
     """
-    Build a LangGraph QA graph.
+    Build and compile the LangGraph QA graph.
 
-    `llm` and `tools` are dependency-injected to keep nodes import-light.
+    TODO — follow these steps:
+
+    1. Create the graph:
+           g = StateGraph(QAState)
+
+    2. Register all nodes with g.add_node("name", function):
+           extract, check_existing, notion_search, notion_enrich,
+           generate, self_review, review, want_playwright,
+           generate_playwright, publish
+
+    3. Add linear edges with g.add_edge(source, target):
+           START → extract → check_existing → notion_search → notion_enrich
+                 → generate → self_review → review
+
+           want_playwright → generate_playwright → publish → END
+
+    4. Add a conditional edge from "review" using _route_after_review:
+           "approved"      → "want_playwright"
+           "needs_changes" → "generate"
+
+    5. Compile with interrupt_before=["review", "want_playwright"].
+       If checkpointer is not None, pass it to compile() as well.
+
+    6. Return the compiled graph.
     """
-    g = StateGraph(QAState)
-
-    g.add_node("extract", extract_node)
-    g.add_node("check_existing", check_existing_node)
-    g.add_node("notion_search", search_notion_node)
-    g.add_node("notion_enrich", enrich_notion_node)
-    g.add_node("generate", generate_test_cases_node)
-    g.add_node("self_review", self_review_node)
-    g.add_node("review", review_node)
-    g.add_node("want_playwright", want_playwright_node)
-    g.add_node("generate_playwright", generate_playwright_node)
-    g.add_node("publish", publish_node)
-
-    g.add_edge(START, "extract")
-    g.add_edge("extract", "check_existing")
-    g.add_edge("check_existing", "notion_search")
-    g.add_edge("notion_search", "notion_enrich")
-    g.add_edge("notion_enrich", "generate")
-    g.add_edge("generate", "self_review")
-    g.add_edge("self_review", "review")
-
-    # After human review, either proceed to the Playwright decision node
-    # or route back to regeneration with feedback.
-    g.add_conditional_edges(
-        "review",
-        _route_after_review,
-        {
-            "approved": "want_playwright",
-            "needs_changes": "generate",
-        },
-    )
-
-    g.add_edge("want_playwright", "generate_playwright")
-    g.add_edge("generate_playwright", "publish")
-    g.add_edge("publish", END)
-
-    compile_kwargs = {"interrupt_before": ["review", "want_playwright"]}
-    if checkpointer is not None:
-        compile_kwargs["checkpointer"] = checkpointer
-
-    return g.compile(**compile_kwargs)
+    raise NotImplementedError("TODO: implement build_graph")

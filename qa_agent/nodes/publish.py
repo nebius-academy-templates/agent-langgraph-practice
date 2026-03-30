@@ -1,13 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, Optional
+# publish_node is implemented in playwright.py.
+# This file is kept for import compatibility.
+from .playwright import publish_node
 
-from ..state import QAState
-
-
-def publish(state: QAState, *, tools: Optional[object] = None) -> Dict:
-    """
-    Placeholder for publishing (Linear/Notion/etc). Uses injected tools only.
-    """
-    _ = tools
-    return {"published": True}
+__all__ = ["publish_node"]
