@@ -185,16 +185,6 @@ At the review pause, type `approve` to accept or describe a change.
 
 At the `want_playwright` pause, type `yes` or `no`.
 
-## 7. Validate locally
-
-Copy `verify.py` from the solution directory and run it:
-
-```
-python verify.py
-```
-
-All checks must pass before you submit.
-
 ### Tips
 
 - LangGraph state is persisted between interrupts via SQLite (`qa_agent_memory.db`). Delete this file to start a fresh run.
